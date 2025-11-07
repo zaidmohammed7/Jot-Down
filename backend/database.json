@@ -1,0 +1,6 @@
+{
+  "dev": {
+    "databaseUrl": "postgresql://postgres:@localhost:5432/jot_down_db?schema=public",
+    "dir": "migrations"
+  }
+}
