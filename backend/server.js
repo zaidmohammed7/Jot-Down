@@ -1,13 +1,23 @@
     const express = require('express');
+    const cors = require('cors');
     const app = express();
-    const PORT = process.env.PORT || 3000; // Use environment variable or default to 3000
+    const PORT = process.env.PORT || 3500; // Use environment variable or default to 3500
 
-    // Define a basic route
+
+    app.use(cors({
+      origin: [
+        'http://localhost:5173', 
+        'http://localhost:3000', 
+         process.env.LIVE_URL   // fill this in later
+      ],
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      credentials: true, 
+    }));
+
     app.get('/', (req, res) => {
-      res.send('this is my test');
+      res.send('hello from the backend');
     });
 
-    // Start the server
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });
