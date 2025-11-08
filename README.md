@@ -16,7 +16,11 @@
 
 ###### Install dependencies for frontend and backend:
 - cd *frontend* && npm install
-- cd *backend* && npm install 
+- cd *backend* && npm install
+
+##### Set your environment variables:
+- touch backend/.env
+- contact rdkumar2@illinois.edu or through text for env variables
 
 ##### Run the db migrations
 - npx node-pg-migrate up
