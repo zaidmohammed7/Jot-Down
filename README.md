@@ -23,7 +23,7 @@
 - contact rdkumar2@illinois.edu or through text for env variables
 
 ##### Run the db migrations
-- npx node-pg-migrate up
+- cd backend && npx node-pg-migrate up
 
 
 ##### To start up the local environment:
