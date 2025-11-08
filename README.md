@@ -1,11 +1,18 @@
 ### Running Locally
 
-- cd into *frontend*
-- npm install
-- cd into *backend*
-- npm install
-- run this command to create a template .env file:
-- cp .sampleenv .env
-- fill in the environment variables
+##### Install the following:
+- **Node.js** ≥ 18  
+- **PostgreSQL** 
+
+##### After cloning the repository
+----------------------------------------------
+
+###### Install dependencies for frontend and backend:
+- cd *frontend* && npm install
+- cd *backend* && npm install 
+
+
+
+##### To start up the local environment:
 - Start up the server: npm run dev
 - Start up the client: npm run dev
