@@ -27,5 +27,5 @@
 
 
 ##### To start up the local environment:
-- Start up the server: npm run dev
-- Start up the client: npm run dev
+- Start up the server: cd backend && npm run dev
+- Start up the client: cd frontend && npm run dev
