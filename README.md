@@ -27,5 +27,7 @@
 
 
 ##### To start up the local environment:
-- Start up the server: cd backend && npm run dev
-- Start up the client: cd frontend && npm run dev
+- Start up the server: cd backend && npm run dev &
+- Start up the client: cd frontend && npm run dev &
+  - note; the '&' at the end of the 'npm run' commands is so that they run as background processes.
+  - This isn't really necessary, but it lets you use the same terminal instance for both.
