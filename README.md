@@ -31,3 +31,12 @@
 - Start up the client: cd frontend && npm run dev &
   - note; the '&' at the end of the 'npm run' commands is so that they run as background processes.
   - This isn't really necessary, but it lets you use the same terminal instance for both.
+
+
+##### Making a db migration:
+- Anytime you add a new column or table, you'll want to make a migration to go along with it
+- That lets everyone else pull down the same db structure once they go to pull your changes
+- To make a db migration you can make a command like this:
+  - npm run migrate create description_of_migration
+- check out the migrations folder in the backend for some examples for how to define your db changes
+- Once you are done, run npx node-pg-migrate up again to send your changes to the db!
