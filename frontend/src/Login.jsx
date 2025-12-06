@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styles from './Login.module.css';
+import axios from 'axios';
 
 
 
@@ -17,17 +18,25 @@ function Login() {
     });
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
+    console.log("Verifying credentials...");
 
-    if (credentials.email === 'test@example.com' && credentials.password === 'password') {
-      console.log("correct!");
-      
-    
-    } else {
-      console.log("bad login attempt");
+    const apiPath = "http://localhost:3500/api/users/login"; // change this to env variable later
+    try {
+      const res = await axios.post(apiPath, {
+          email: credentials.email,
+          password: credentials.password
+      });
+      console.log(res.data);
+      if (res.status === 200) {
+        console.log("successful login");
+      }
+    } catch (error) {
+      console.error("Error getting response from backend", error);
     }
+
 
   };
 

@@ -1,8 +1,10 @@
 const pool = require('../db');
+//import crypto from "crypto";
 
 
 module.exports = function(router) {
     var userRoute = router.route('/users');
+    
 
     userRoute.get(async (req, res) => {
         try {
@@ -15,7 +17,7 @@ module.exports = function(router) {
     });
 
     userRoute.post(async (req, res) => {
-          try {
+        try {
             const { name, email } = req.body;
 
             if (!name || !email) {
@@ -35,6 +37,34 @@ module.exports = function(router) {
             console.error(err);
             res.status(500).json({ error: 'Database error' });
         }
+    });
+
+    var userLoginRoute = router.route('/users/login');
+
+    userLoginRoute.post(async (req, res) => {
+         try {
+            const { email, password } = req.body;
+
+            if (!email || !password) {
+                return res.status(400).json({ error: 'Invalid password/email' });
+            }
+
+            console.log('This is the email : %s', email);
+            console.log('this is the password :%s', password);
+            // const hash = crypto
+            // .pbkdf2Sync(password, salt, 310000, 32, "sha256")
+            // .toString("hex");
+            
+
+
+            res.status(200).json({
+            message: 'Successful Login',
+            });
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ error: 'Database error' });
+        }
+
     });
 
     return router;
