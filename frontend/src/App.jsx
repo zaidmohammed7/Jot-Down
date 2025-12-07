@@ -1,32 +1,19 @@
-import { useState } from 'react'
-import { useEffect } from 'react';
-import Login from './Login';
-import axios from 'axios';
-import MainPage from './MainPage';
+
+import { BrowserRouter, Routes, Route} from "react-router-dom";
+import Login from './pages/Login';
+import MainPage from './pages/MainPage';
+import Home from './pages/Home';
 
 function App() {
-
-  const [test, setTest] = useState('');
-
-
-  const checkBackend = async () => {
-  const apiPath = "http://localhost:3500/"; // change this to env variable later
-  try {
-    const res = await axios.get(apiPath, {});
-    setTest(res.data);
-  } catch (error) {
-    console.error("Error getting response from backend", error);
-  }
-  };
-
-    useEffect(() => { checkBackend();}, []);
-
   return (
     <>
-      <h1>Here is the response: {test}</h1>
-      <Login/>
-
-      <MainPage />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/Login" element={<Login />} />
+          <Route path="/MainPage" element={<MainPage />} />
+        </Routes>
+      </BrowserRouter>
     </>
   )
 }

@@ -1,0 +1,14 @@
+.outerBox {
+    display: flex;
+    justify-content: center;
+}
+.innerBox {
+    border-style: solid;
+    padding: 10px;
+    border-radius: 10%;
+}
+
+.inputBox {
+    display: flex;
+    flex-direction: column;
+}

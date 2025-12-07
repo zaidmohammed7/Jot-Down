@@ -4,7 +4,7 @@ import axios from 'axios';
 
 
 
-function Login() {
+function Login_module() {
   const [credentials, setCredentials] = useState({
     email: '',
     password: ''
@@ -45,34 +45,38 @@ function Login() {
     <div className={styles.innerBox}>
       <form onSubmit={handleSubmit} >
         
-        <h2>Login</h2>
-        <div className="input-group">
-          <label htmlFor="email">Email Address</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={credentials.email}
-            onChange={handleChange}
-            required
-          />
+        <h2>Login to your JotDown Account</h2>
+        <div className={styles.inputBox}>
+          <label htmlFor="email">Email*</label>          
+          <div className="input-group">
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={credentials.email}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <label htmlFor="password">Password*</label>
+          <div className="input-group">
+            <input
+              type="password"
+              id="password"
+              name="password"
+              value={credentials.password}
+              onChange={handleChange}
+              required
+            />
+          </div>
         </div>
-        <div className="input-group">
-          <label htmlFor="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            value={credentials.password}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <button type="submit">Sign In</button>
+
+        <button type="submit">sign in</button>
+        
       </form>
     </div>
     </div>
   );
 }
 
-export default Login;
+export default Login_module;
