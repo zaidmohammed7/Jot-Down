@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useEffect } from 'react';
 import Login from './Login';
 import axios from 'axios';
+import MainPage from './MainPage';
 
 function App() {
 
@@ -24,6 +25,8 @@ function App() {
     <>
       <h1>Here is the response: {test}</h1>
       <Login/>
+
+      <MainPage />
     </>
   )
 }
