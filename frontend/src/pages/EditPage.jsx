@@ -1,86 +1,73 @@
-import React, { useEffect } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
-
-import { useCreateBlockNote } from "@blocknote/react";
-import { BlockNoteView } from "@blocknote/mantine";
-
-import "@blocknote/core/fonts/inter.css";
-import "@blocknote/mantine/style.css";
-import "./MainPage.css";
+import React, { useMemo, useState } from "react";
+import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css";
+import "./EditPage.css";
 
 function EditPage() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { noteId } = useParams();
+  const [content, setContent] = useState("");
 
-  // Expecting: { folderName, title, noteId } from MainPage navigate()
-  const noteMeta = location.state;
-
-  useEffect(() => {
-    if (!noteMeta) {
-      // If user goes directly to /edit/:noteId without state, send them home
-      navigate("/", { replace: true });
-    }
-  }, [noteMeta, navigate]);
-
-  const editor = useCreateBlockNote({
-    initialContent: [
-      {
-        type: "paragraph",
-          content: [
-            {
-              type: "text",
-              text:
-                "This is placeholder content for your note. " +
-                "Later we’ll load and save real content from the backend.",
-            },
-          ],
+  // Quill modules (toolbar + history)
+  const modules = useMemo(
+    () => ({
+      toolbar: [
+        [{ header: [1, 2, 3, false] }],
+        ["bold", "italic", "underline", "strike"],
+        [{ list: "ordered" }, { list: "bullet" }],
+        [{ script: "sub" }, { script: "super" }],
+        [{ indent: "-1" }, { indent: "+1" }],
+        [{ align: [] }],
+        ["link", "blockquote", "code-block"],
+        ["clean"],
+      ],
+      history: {
+        delay: 500,
+        maxStack: 100,
+        userOnly: true,
       },
-    ],
-  });
+    }),
+    []
+  );
 
-  if (!noteMeta) {
-    return null;
-  }
-
-  const handleBack = () => navigate(-1);
-
-  const handleSave = async () => {
-    const doc = editor.document;
-    console.log("Saving note", noteId, doc);
-    // TODO: axios.post/put to your backend
-  };
+  const formats = [
+    "header",
+    "bold",
+    "italic",
+    "underline",
+    "strike",
+    "list",
+    "bullet",
+    "script",
+    "indent",
+    "align",
+    "link",
+    "blockquote",
+    "code-block",
+  ];
 
   return (
     <div className="edit-page">
-      <header className="edit-header">
-        <button className="ghost-button" onClick={handleBack}>
-          ← Back
-        </button>
-
-        <div className="edit-title-stack">
-          <div className="editor-breadcrumbs">
-            <span>{noteMeta.folderName}</span>
-            <span>/</span>
-            <span className="editor-breadcrumb-current">
-              {noteMeta.title}
-            </span>
-          </div>
-          <div className="muted edit-subtitle">
-            Editing note <strong>{noteMeta.title}</strong>
-          </div>
+      <header className="edit-page-header">
+        <div className="edit-page-title-group">
+          <h1 className="edit-page-title">Edit note</h1>
+          <p className="edit-page-subtitle">
+            Use the toolbar to format your note. Later we&apos;ll hook this up to
+            your backend and save everything.
+          </p>
         </div>
-
-        <button className="primary-button" onClick={handleSave}>
-          Save
-        </button>
       </header>
 
-      <main className="edit-main">
-        <div className="editor-content edit-content">
-          <BlockNoteView editor={editor} />
+      <div className="edit-page-body">
+        <div className="quill-shell">
+          <ReactQuill
+            theme="snow"
+            value={content}
+            onChange={setContent}
+            modules={modules}
+            formats={formats}
+            placeholder="Start writing your note..."
+          />
         </div>
-      </main>
+      </div>
     </div>
   );
 }
