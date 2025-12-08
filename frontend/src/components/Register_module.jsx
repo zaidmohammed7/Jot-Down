@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styles from './Register.module.css';
 import axios from 'axios';
 
 function Register_module() {
+  const navigate = useNavigate();
   const [credentials, setCredentials] = useState({
-    name: '',          
     email: '',
     password: '',
     confirmPassword: ''
@@ -12,8 +13,9 @@ function Register_module() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [validationErrors, setValidationErrors] = useState({
-    name: '',          
     email: '',
     password: '',
     confirmPassword: ''
@@ -22,11 +24,6 @@ function Register_module() {
   // Real-time validation effect
   useEffect(() => {
     const errors = {};
-
-    // Name validation
-    if (credentials.name && credentials.name.length < 2) { // simple check
-      errors.name = 'Name must be at least 2 characters';
-    }
 
     // Email validation
     if (credentials.email) {
@@ -65,7 +62,7 @@ function Register_module() {
   };
 
   const validateForm = () => {
-    if (!credentials.name || !credentials.email || !credentials.password || !credentials.confirmPassword) { 
+    if (!credentials.email || !credentials.password || !credentials.confirmPassword) {
       setError('Please fill in all required fields');
       return false;
     }
@@ -91,7 +88,6 @@ function Register_module() {
 
     try {
       const res = await axios.post(apiPath, {
-        name: credentials.name,        
         email: credentials.email,
         password: credentials.password
       });
@@ -100,13 +96,12 @@ function Register_module() {
         setSuccess('Account created successfully! Redirecting...');
         console.log("Successful registration", res.data);
         
-        // silencing for now
-        // if (res.data.token) {
-        //   localStorage.setItem('token', res.data.token);
-        // }
+        if (res.data.token) {
+          localStorage.setItem('token', res.data.token);
+        }
 
         setTimeout(() => {
-          window.location.href = '/MainPage';
+          navigate('/MainPage');
         }, 1500);
       }
     } catch (error) {
@@ -125,8 +120,7 @@ function Register_module() {
   };
 
   // Check if form is valid for button enable/disable
-  const isFormValid = credentials.name &&  
-                      credentials.email && 
+  const isFormValid = credentials.email && 
                       credentials.password && 
                       credentials.confirmPassword &&
                       Object.keys(validationErrors).every(key => !validationErrors[key]);
@@ -141,25 +135,6 @@ function Register_module() {
           {success && <div className={styles.successMessage}>{success}</div>}
           
           <div className={styles.inputBox}>
-
-            {/* Name Field */}
-            <div>
-              <label htmlFor="name">Name*</label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={credentials.name}
-                onChange={handleChange}
-                placeholder="Enter your name"
-                disabled={isLoading}
-                required
-              />
-              {validationErrors.name && (
-                <span className={styles.fieldError}>{validationErrors.name}</span>
-              )}
-            </div>
-
             <div>
               <label htmlFor="email">Email*</label>
               <input
@@ -178,9 +153,19 @@ function Register_module() {
             </div>
 
             <div>
-              <label htmlFor="password">Password*</label>
+              <div className={styles.passwordLabelRow}>
+                <label htmlFor="password">Password*</label>
+                <button
+                  type="button"
+                  className={styles.showPasswordButton}
+                  onClick={() => setShowPassword(!showPassword)}
+                  disabled={isLoading}
+                >
+                  {showPassword ? 'Hide' : 'Show'}
+                </button>
+              </div>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 id="password"
                 name="password"
                 value={credentials.password}
@@ -195,9 +180,19 @@ function Register_module() {
             </div>
 
             <div>
-              <label htmlFor="confirmPassword">Confirm Password*</label>
+              <div className={styles.passwordLabelRow}>
+                <label htmlFor="confirmPassword">Confirm Password*</label>
+                <button
+                  type="button"
+                  className={styles.showPasswordButton}
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  disabled={isLoading}
+                >
+                  {showConfirmPassword ? 'Hide' : 'Show'}
+                </button>
+              </div>
               <input
-                type="password"
+                type={showConfirmPassword ? "text" : "password"}
                 id="confirmPassword"
                 name="confirmPassword"
                 value={credentials.confirmPassword}
@@ -221,7 +216,7 @@ function Register_module() {
             <button 
               type="button" 
               className={styles.toggleButton} 
-              onClick={() => window.location.href = '/login'}
+              onClick={() => navigate('/login')}
               disabled={isLoading}
             >
               Sign In
