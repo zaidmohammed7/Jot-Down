@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./MainPage.css";
 import { VscNewFile, VscNewFolder } from "react-icons/vsc";
 import { useNavigate } from "react-router-dom";
+import { getAIReview } from "../services/gemini";
 
 function MainPage() {
   const navigate = useNavigate();
@@ -46,7 +47,7 @@ function MainPage() {
   // Selected note info
   const [selectedNote, setSelectedNote] = useState(null);
 
-  // Inline "new item" state: { type: 'folder' | 'note', parentId: string | null, name: string }
+  // Inline "new item" state
   const [newItem, setNewItem] = useState(null);
 
   // Context menu (three dots) state
@@ -54,13 +55,46 @@ function MainPage() {
 
   // Drag state
   const [draggedNodeId, setDraggedNodeId] = useState(null);
-
-  // Which folder is currently a drop target (for highlight)
   const [dragOverFolderId, setDragOverFolderId] = useState(null);
 
   // Rename state
   const [renamingNodeId, setRenamingNodeId] = useState(null);
   const [renameValue, setRenameValue] = useState("");
+
+  // --- NEW STATE FOR EDITOR AND AI ---
+  const [noteContent, setNoteContent] = useState("");
+  const [aiFeedback, setAiFeedback] = useState(null);
+  const [isLoadingAI, setIsLoadingAI] = useState(false);
+
+  // Update editor content when a new note is selected
+  useEffect(() => {
+    if (selectedNote) {
+      // In a real app, you would fetch the content from the backend here
+      setNoteContent(`This is the content for ${selectedNote.title}. You can edit this text now!`);
+      setAiFeedback(null);
+    } else {
+      setNoteContent("");
+      setAiFeedback(null);
+    }
+  }, [selectedNote]);
+
+  // --- AI HANDLER ---
+  const handleGenerateReview = async () => {
+    if (!noteContent) return;
+
+    setIsLoadingAI(true);
+    setAiFeedback(null);
+
+    try {
+      const review = await getAIReview(noteContent);
+      setAiFeedback(review);
+    } catch (error) {
+      console.error(error);
+      setAiFeedback("Error: Could not connect to Gemini. Please check your API key.");
+    } finally {
+      setIsLoadingAI(false);
+    }
+  };
 
   // Sort so folders appear first, then notes; both alphabetically within type
   const sortNodesForDisplay = (a, b) => {
@@ -709,27 +743,46 @@ function MainPage() {
                   {selectedNote.title}
                 </span>
               </div>
-              <div className="editor-actions">
-                {/* Removed #note pill; just keep Edit */}
-                <button className="ghost-button" onClick={handleEditClick}>
-                  ✎ Edit
-                </button>
-              </div>
             </header>
 
-            <article className="editor-content">
-              <h1>{selectedNote.title}</h1>
-              <p className="muted">
-                This is placeholder content for <strong>{selectedNote.title}</strong>.
-                Later this will be replaced by your rich text editor and note content
-                from the backend.
-              </p>
-            </article>
+            <div className="editor-content" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+              <input
+                value={selectedNote.title}
+                readOnly
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#f7f7ff',
+                  fontSize: '2em',
+                  fontWeight: 'bold',
+                  marginBottom: '1rem',
+                  outline: 'none',
+                  width: '100%'
+                }}
+              />
+              <textarea
+                value={noteContent}
+                onChange={(e) => setNoteContent(e.target.value)}
+                style={{
+                  flex: 1,
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#a3a6c0',
+                  fontSize: '1rem',
+                  lineHeight: '1.6',
+                  resize: 'none',
+                  outline: 'none',
+                  fontFamily: 'inherit',
+                  width: '100%'
+                }}
+                placeholder="Start typing your note here..."
+              />
+            </div>
           </>
         )}
       </main>
 
-      {/* RIGHT PANE — AI FEEDBACK (placeholder) */}
+      {/* RIGHT PANE — AI FEEDBACK */}
       <section className="right-pane">
         <header className="right-header">
           <span>AI Review</span>
@@ -737,23 +790,40 @@ function MainPage() {
 
         <div className="ai-feedback">
           <div className="ai-feedback-header">
-            <div className="ai-pill">Gemini · coming soon</div>
-            <button className="primary-button" disabled>
-              Review this note
+            <div className="ai-pill">
+              {isLoadingAI ? "Gemini · Thinking..." : "Gemini 1.5 Flash"}
+            </div>
+            <button
+              className="primary-button"
+              onClick={handleGenerateReview}
+              disabled={!selectedNote || isLoadingAI}
+              style={{
+                opacity: (!selectedNote || isLoadingAI) ? 0.6 : 1,
+                cursor: (!selectedNote || isLoadingAI) ? 'not-allowed' : 'pointer'
+              }}
+            >
+              {isLoadingAI ? 'Analyzing...' : 'Summarize'}
             </button>
           </div>
 
-          <div className="ai-feedback-body">
-            <p className="muted">
-              This panel will show feedback from the LLM about the currently selected note.
-            </p>
-            <ul>
-              <li>Summaries of the note</li>
-              <li>Concepts you might be missing</li>
-              <li>Questions to quiz yourself</li>
-              <li>Links to related topics</li>
-            </ul>
-            <p className="muted">For now, it&apos;s just a placeholder.</p>
+          <div className="ai-feedback-body" style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 150px)' }}>
+            {aiFeedback ? (
+              <div style={{ whiteSpace: 'pre-wrap', fontSize: '0.9rem', lineHeight: '1.5' }}>
+                {aiFeedback}
+              </div>
+            ) : (
+              <>
+                <p className="muted">
+                  Click "Summarize" to generate:
+                </p>
+                <ul>
+                  <li>Summaries of the note</li>
+                  <li>Concepts you might be missing</li>
+                  <li>Questions to quiz yourself</li>
+                  <li>Links to related topics</li>
+                </ul>
+              </>
+            )}
           </div>
         </div>
       </section>
