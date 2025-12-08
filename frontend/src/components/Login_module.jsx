@@ -4,6 +4,7 @@ import styles from './Login.module.css';
 import axios from 'axios';
 
 function Login_module() {
+  const navigate = useNavigate();
   const [credentials, setCredentials] = useState({
     email: '',
     password: ''
@@ -11,6 +12,7 @@ function Login_module() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -61,8 +63,8 @@ function Login_module() {
       });
 
       if (res.status === 200 || res.status === 201) {
-        setSuccess(isLogin ? 'Login successful!' : 'Account created successfully!');
-        console.log(isLogin ? "Successful login" : "Successful registration", res.data);
+        setSuccess('Login successful!');
+        console.log("Successful login", res.data);
         
         if (res.data.token) {
           localStorage.setItem('token', res.data.token);
@@ -113,9 +115,19 @@ function Login_module() {
             </div>
 
             <div>
-              <label htmlFor="password">Password*</label>
+              <div className={styles.passwordLabelRow}>
+                <label htmlFor="password">Password*</label>
+                <button
+                  type="button"
+                  className={styles.showPasswordButton}
+                  onClick={() => setShowPassword(!showPassword)}
+                  disabled={isLoading}
+                >
+                  {showPassword ? 'Hide' : 'Show'}
+                </button>
+              </div>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 id="password"
                 name="password"
                 value={credentials.password}
