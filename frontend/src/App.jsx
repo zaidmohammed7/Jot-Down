@@ -4,7 +4,6 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import MainPage from './pages/MainPage';
 import EditPage from "./pages/EditPage";
-import Home from './pages/Home';
 import Launch from './pages/Launch';
 import './index.css'
 
