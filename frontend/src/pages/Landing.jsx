@@ -17,9 +17,9 @@ function Launch() {
         {/* Hero Section */}
         <div className="hero-section">
           <h1 className="hero-title">
-            Your thoughts, organized.
+            Quick texted notes.
             <br />
-            <span className="hero-highlight">Your way.</span>
+            <span className="hero-highlight"> Without any of the visual gunk.</span>
           </h1>
           <p className="hero-description">
             Need to take notes on the fly? Want documents organized simple and clean? Quickly Jot Down whatever you need, whenever you need with no hastle.
