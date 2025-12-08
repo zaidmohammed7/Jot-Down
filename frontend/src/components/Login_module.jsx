@@ -12,6 +12,8 @@ function Login_module() {
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  const navigate = useNavigate();
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setCredentials({
@@ -61,12 +63,14 @@ function Login_module() {
       });
 
       if (res.status === 200 || res.status === 201) {
-        setSuccess(isLogin ? 'Login successful!' : 'Account created successfully!');
-        console.log(isLogin ? "Successful login" : "Successful registration", res.data);
+        setSuccess('Login successful!');
+        console.log("Successful login", res.data);
         
-        if (res.data.token) {
-          localStorage.setItem('token', res.data.token);
-        }
+
+        // silencing this for now
+        // if (res.data.token) {
+        //   localStorage.setItem('token', res.data.token);
+        // }
 
         // Navigate to MainPage
         setTimeout(() => {

@@ -39,7 +39,7 @@ module.exports = function(router) {
         }
     });
 
-    var userSignupRoute = router.route('/users/signup');
+    var userSignupRoute = router.route('/users/register');
 
     userSignupRoute.post(async (req, res) => {
          try {
