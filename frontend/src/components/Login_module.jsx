@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
 import axios from 'axios';
 
 function Login_module() {
+  const navigate = useNavigate();
   const [credentials, setCredentials] = useState({
     email: '',
     password: ''
@@ -11,6 +12,33 @@ function Login_module() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [validationErrors, setValidationErrors] = useState({
+    email: '',
+    password: ''
+  });
+
+  // Real-time validation effect
+  useEffect(() => {
+    const errors = {};
+
+    // Email validation
+    if (credentials.email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(credentials.email)) {
+        errors.email = 'Invalid email format';
+      }
+    }
+
+    // Password validation
+    if (credentials.password) {
+      if (credentials.password.length < 6) {
+        errors.password = 'Password must be at least 6 characters';
+      }
+    }
+
+    setValidationErrors(errors);
+  }, [credentials]); // Runs every time credentials change
 
   const navigate = useNavigate();
 
@@ -31,14 +59,8 @@ function Login_module() {
       return false;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(credentials.email)) {
-      setError('Please enter a valid email address');
-      return false;
-    }
-
-    if (credentials.password.length < 6) {
-      setError('Password must be at least 6 characters long');
+    if (Object.keys(validationErrors).some(key => validationErrors[key])) {
+      setError('Please fix the errors above');
       return false;
     }
 
@@ -92,6 +114,11 @@ function Login_module() {
     }
   };
 
+  // Check if form is valid for button enable/disable
+  const isFormValid = credentials.email && 
+                      credentials.password && 
+                      Object.keys(validationErrors).every(key => !validationErrors[key]);
+
   return (
     <div className={styles.outerBox}>
       <div className={styles.innerBox}>
@@ -114,12 +141,25 @@ function Login_module() {
                 disabled={isLoading}
                 required
               />
+              {validationErrors.email && (
+                <span className={styles.fieldError}>{validationErrors.email}</span>
+              )}
             </div>
 
             <div>
-              <label htmlFor="password">Password*</label>
+              <div className={styles.passwordLabelRow}>
+                <label htmlFor="password">Password*</label>
+                <button
+                  type="button"
+                  className={styles.showPasswordButton}
+                  onClick={() => setShowPassword(!showPassword)}
+                  disabled={isLoading}
+                >
+                  {showPassword ? 'Hide' : 'Show'}
+                </button>
+              </div>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 id="password"
                 name="password"
                 value={credentials.password}
@@ -128,10 +168,13 @@ function Login_module() {
                 disabled={isLoading}
                 required
               />
+              {validationErrors.password && (
+                <span className={styles.fieldError}>{validationErrors.password}</span>
+              )}
             </div>
           </div>
 
-          <button type="submit" disabled={isLoading}>
+          <button type="submit" disabled={isLoading || !isFormValid}>
             {isLoading ? 'Signing In...' : 'Sign In'}
           </button>
 
@@ -140,7 +183,7 @@ function Login_module() {
             <button 
               type="button" 
               className={styles.toggleButton} 
-              onClick={() => window.location.href = '/Register'}
+              onClick={() => navigate('/Register')}
               disabled={isLoading}
             >
               Sign Up

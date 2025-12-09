@@ -68,8 +68,8 @@
 .innerBox button[type="submit"] {
   width: 100%;
   padding: 0.85rem 1.5rem;
-  background: var(--accent, #a26bff);
-  color: #fff;
+  background: var(--accent-soft, #a26bff);
+  color: #a26bff;
   border: none;
   border-radius: 8px;
   font-size: 1rem;
@@ -136,25 +136,41 @@
   margin-bottom: 1rem;
 }
 
-/* Forgot password link */
-.forgotPassword {
-  text-align: right;
-  margin-top: -0.6rem;
-  margin-bottom: 1rem;
+/* Password label row with show/hide button */
+.passwordLabelRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.4rem;
 }
 
-.forgotPassword button {
+.showPasswordButton {
   background: none;
   border: none;
-  color: var(--text-muted, #a3a6c0);
+  color: var(--accent, #a26bff);
   font-size: 0.8rem;
   cursor: pointer;
   padding: 0;
+  font-weight: 600;
   transition: color 0.18s ease-out;
 }
 
-.forgotPassword button:hover {
-  color: var(--accent, #a26bff);
+.showPasswordButton:hover {
+  color: #b47fff;
+}
+
+.showPasswordButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Field error message */
+.fieldError {
+  display: block;
+  color: #ff8c9b;
+  font-size: 0.75rem;
+  margin-top: 0.3rem;
+  margin-left: 0.2rem;
 }
 
 /* Loading state for button */

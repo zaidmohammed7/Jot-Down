@@ -1,0 +1,200 @@
+/* Page layout */
+.edit-page {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: var(--bg, #111218);
+    color: var(--text, #f7f7ff);
+  
+    /* Top padding roughly matches toolbar height */
+    padding: 7.5rem 2.2rem 1.6rem;
+    box-sizing: border-box;
+  }
+  
+  /* Fixed top bar (title area) */
+  .edit-toolbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+  
+    z-index: 130;
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  
+    background: #181925;
+    backdrop-filter: blur(10px);
+  
+    display: flex;
+    flex-direction: column;
+    padding: 1.1rem 2.2rem 1rem;
+    gap: 0.8rem;
+    min-height: 80px;
+  }
+  
+  /* Title + path row */
+  .edit-toolbar-path-row {
+    display: flex;
+    align-items: center;
+  }
+  
+  .edit-toolbar-path-text {
+    font-size: 1.05rem;
+    color: var(--text-muted, #c0c3de);
+    letter-spacing: 0.3px;
+  }
+  
+  .edit-toolbar-note-name {
+    color: var(--text, #ffffff);
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: text;
+    padding: 2px 4px;
+  }
+  
+  .edit-toolbar-rename-input {
+    border-radius: 4px;
+    border: 1px solid var(--border-subtle, #2a2c3d);
+    background: #141421;
+    color: var(--text, #f7f7ff);
+    padding: 0.2rem 0.5rem;
+    font-size: 1.05rem;
+    min-width: 180px;
+  }
+  
+  .edit-toolbar-rename-input:focus {
+    outline: none;
+    border-color: var(--accent, #a26bff);
+  }
+
+  .edit-back-button {
+    border-radius: 999px;
+    border: 1px solid var(--border-subtle);
+    background: none;
+    color: var(--text-muted);
+    padding: 0.2rem 0.7rem;
+    cursor: pointer;
+    margin-right: 0.75rem;
+    font-size: 0.85rem;
+  }
+  
+  .edit-back-button:hover {
+    border-color: #3b3f5a;
+    color: var(--text);
+  }
+  
+  /* Editor area */
+  .edit-page-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  
+    padding-bottom: 3rem;
+  }
+  
+  /* Main page container */
+  .quill-shell {
+    width: 750px;
+    max-width: 100%;
+  
+    background: var(--bg-elevated-soft, #1f2130);
+    border-radius: 0;
+    border: 1px solid var(--border-subtle, #2a2c3d);
+  
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto;
+    box-shadow: var(--shadow-soft);
+  }
+  
+  /* Quill toolbar styling */
+  .quill-shell .ql-toolbar.ql-snow {
+    border: none;
+    border-bottom: 1px solid var(--border-subtle, #2a2c3d);
+    background: #181925;
+  }
+  
+  .quill-shell .ql-toolbar button,
+  .quill-shell .ql-toolbar .ql-picker-label {
+    color: #ffffff;
+    border-radius: 4px;
+  }
+  
+  /* Make dropdown text white */
+  .quill-shell .ql-toolbar .ql-picker-label,
+  .quill-shell .ql-toolbar .ql-picker-item {
+    color: #ffffff;
+  }
+  
+  /* Toolbar icons */
+  .quill-shell .ql-toolbar .ql-stroke {
+    stroke: #ffffff;
+  }
+  
+  .quill-shell .ql-toolbar .ql-fill,
+  .quill-shell .ql-toolbar .ql-stroke.ql-fill {
+    fill: #ffffff;
+  }
+  
+  /* Hover + active states */
+  .quill-shell .ql-toolbar button:hover,
+  .quill-shell .ql-toolbar .ql-picker-label:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+  
+  .quill-shell .ql-toolbar button.ql-active,
+  .quill-shell .ql-toolbar .ql-picker-label.ql-active {
+    background: rgba(255, 255, 255, 0.16);
+  }
+  
+  /* Dropdown panels */
+  .quill-shell .ql-toolbar .ql-picker-options {
+    background: #252840;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
+  
+  /* Font: map Quill's "serif" to Times New Roman */
+  .quill-shell .ql-editor .ql-font-serif {
+    font-family: "Times New Roman", Times, serif;
+  }
+  
+  /* Rename "serif" option to Times New Roman */
+  .quill-shell .ql-snow .ql-picker.ql-font .ql-picker-label[data-value="serif"]::before,
+  .quill-shell .ql-snow .ql-picker.ql-font .ql-picker-item[data-value="serif"]::before {
+    content: "Times New Roman";
+  }
+  
+  /* Bullet / number list alignment */
+  .quill-shell .ql-editor ul li::before,
+  .quill-shell .ql-editor ol li::before {
+    font-size: inherit;
+    line-height: inherit;
+    vertical-align: baseline;
+  }
+  
+  /* Quill container + editor */
+  .quill-shell .ql-container.ql-snow {
+    border: none;
+  }
+  
+  /* Editable content area */
+  .quill-shell .ql-editor {
+    background: transparent;
+    color: var(--text, #f7f7ff);
+  
+    /* 0.5-inch margins */
+    padding: 0.5in;
+  
+    line-height: 1.5;
+  
+    /* Default page height (approx. US Letter at 96dpi) */
+    min-height: 1056px;
+  }
+  
+  /* Placeholder text */
+  .quill-shell .ql-editor.ql-blank::before {
+    color: var(--text-muted, #a3a6c0);
+  }
+  

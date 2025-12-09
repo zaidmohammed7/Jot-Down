@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styles from './Register.module.css';
 import axios from 'axios';
 
 function Register_module() {
+  const navigate = useNavigate();
   const [credentials, setCredentials] = useState({
     name: '',          
     email: '',
@@ -12,6 +14,8 @@ function Register_module() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [validationErrors, setValidationErrors] = useState({
     name: '',          
     email: '',
@@ -106,7 +110,7 @@ function Register_module() {
         // }
 
         setTimeout(() => {
-          window.location.href = '/MainPage';
+          navigate('/MainPage');
         }, 1500);
       }
     } catch (error) {
@@ -178,9 +182,19 @@ function Register_module() {
             </div>
 
             <div>
-              <label htmlFor="password">Password*</label>
+              <div className={styles.passwordLabelRow}>
+                <label htmlFor="password">Password*</label>
+                <button
+                  type="button"
+                  className={styles.showPasswordButton}
+                  onClick={() => setShowPassword(!showPassword)}
+                  disabled={isLoading}
+                >
+                  {showPassword ? 'Hide' : 'Show'}
+                </button>
+              </div>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 id="password"
                 name="password"
                 value={credentials.password}
@@ -195,9 +209,19 @@ function Register_module() {
             </div>
 
             <div>
-              <label htmlFor="confirmPassword">Confirm Password*</label>
+              <div className={styles.passwordLabelRow}>
+                <label htmlFor="confirmPassword">Confirm Password*</label>
+                <button
+                  type="button"
+                  className={styles.showPasswordButton}
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  disabled={isLoading}
+                >
+                  {showConfirmPassword ? 'Hide' : 'Show'}
+                </button>
+              </div>
               <input
-                type="password"
+                type={showConfirmPassword ? "text" : "password"}
                 id="confirmPassword"
                 name="confirmPassword"
                 value={credentials.confirmPassword}
@@ -221,7 +245,7 @@ function Register_module() {
             <button 
               type="button" 
               className={styles.toggleButton} 
-              onClick={() => window.location.href = '/login'}
+              onClick={() => navigate('/login')}
               disabled={isLoading}
             >
               Sign In

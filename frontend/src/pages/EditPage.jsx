@@ -1,86 +1,157 @@
-import React, { useEffect } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css";
+import "./EditPage.css";
+import { useNavigate } from "react-router-dom";
 
-import { useCreateBlockNote } from "@blocknote/react";
-import { BlockNoteView } from "@blocknote/mantine";
+// How often to autosave after the user stops typing (ms)
+const AUTOSAVE_MS = 2000;
 
-import "@blocknote/core/fonts/inter.css";
-import "@blocknote/mantine/style.css";
-import "./MainPage.css";
+// NOTE: When backend is wired up, you can pass noteId via router params or props.
+async function saveNoteDraft(content) {
+  // TODO: Replace this with a real API call to persist the note.
+  // Example:
+  //   await api.updateNote(noteId, { body: content });
+  //
+  // For now this just logs so you can see when autosave would happen.
+  console.log("[AutoSave] Draft would be saved with length:", content.length);
+}
+
+const modules = {
+  toolbar: [
+    // Header levels
+    [{ header: [1, 2, 3, false] }],
+    // Font family (we'll style 'serif' as Times New Roman in CSS)
+    [{ font: [] }],
+    // Inline styles
+    ["bold", "italic", "underline", "strike"],
+    // Colors
+    [{ color: [] }, { background: [] }],
+    // Lists
+    [{ list: "ordered" }, { list: "bullet" }],
+    // Alignment
+    [{ align: [] }],
+    // Blocks
+    ["blockquote", "code-block"],
+    // Links
+    ["link"],
+  ],
+};
+
+const formats = [
+  "header",
+  "font",
+  "bold",
+  "italic",
+  "underline",
+  "strike",
+  "blockquote",
+  "code-block",
+  "list",
+  "bullet",
+  "align",
+  "link",
+  "color",
+  "background",
+];
 
 function EditPage() {
-  const location = useLocation();
   const navigate = useNavigate();
-  const { noteId } = useParams();
 
-  // Expecting: { folderName, title, noteId } from MainPage navigate()
-  const noteMeta = location.state;
+  // TODO: query DB for actual path + name for this noteId
+  const [notePath] = useState("Course / Topic / ");
+  const [noteName, setNoteName] = useState("Untitled note");
 
-  useEffect(() => {
-    if (!noteMeta) {
-      // If user goes directly to /edit/:noteId without state, send them home
-      navigate("/", { replace: true });
-    }
-  }, [noteMeta, navigate]);
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [renameDraft, setRenameDraft] = useState(noteName);
 
-  const editor = useCreateBlockNote({
-    initialContent: [
-      {
-        type: "paragraph",
-          content: [
-            {
-              type: "text",
-              text:
-                "This is placeholder content for your note. " +
-                "Later we’ll load and save real content from the backend.",
-            },
-          ],
-      },
-    ],
-  });
+  const [value, setValue] = useState("");
 
-  if (!noteMeta) {
-    return null;
-  }
-
-  const handleBack = () => navigate(-1);
-
-  const handleSave = async () => {
-    const doc = editor.document;
-    console.log("Saving note", noteId, doc);
-    // TODO: axios.post/put to your backend
+  const startRename = () => {
+    setRenameDraft(noteName);
+    setIsRenaming(true);
   };
+
+  const commitRename = () => {
+    const trimmed = renameDraft.trim();
+    if (trimmed) setNoteName(trimmed);
+    setIsRenaming(false);
+  };
+
+  const cancelRename = () => {
+    setIsRenaming(false);
+    setRenameDraft(noteName);
+  };
+
+  // Simple autosave: debounce on content changes
+  useEffect(() => {
+    // Skip autosave on first empty mount
+    if (value === undefined) return;
+
+    const timeoutId = setTimeout(() => {
+      // In the future, pass noteId here as well
+      saveNoteDraft(value);
+    }, AUTOSAVE_MS);
+
+    return () => clearTimeout(timeoutId);
+  }, [value]);
 
   return (
     <div className="edit-page">
-      <header className="edit-header">
-        <button className="ghost-button" onClick={handleBack}>
-          ← Back
-        </button>
-
-        <div className="edit-title-stack">
-          <div className="editor-breadcrumbs">
-            <span>{noteMeta.folderName}</span>
-            <span>/</span>
-            <span className="editor-breadcrumb-current">
-              {noteMeta.title}
-            </span>
-          </div>
-          <div className="muted edit-subtitle">
-            Editing note <strong>{noteMeta.title}</strong>
-          </div>
+      {/* FIXED TOP BAR: path + name */}
+      <div className="edit-toolbar">
+        <div className="edit-toolbar-path-row">
+          <button
+            type="button"
+            className="edit-back-button"
+            onClick={() => navigate("/Notes")}
+          >
+            ← Back
+          </button>
+          <span className="edit-toolbar-path-text">
+            {notePath}
+            {isRenaming ? (
+              <input
+                className="edit-toolbar-rename-input"
+                value={renameDraft}
+                autoFocus
+                onChange={(e) => setRenameDraft(e.target.value)}
+                onBlur={commitRename}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    commitRename();
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    cancelRename();
+                  }
+                }}
+              />
+            ) : (
+              <span
+                className="edit-toolbar-note-name"
+                onClick={startRename}
+                title="Click to rename note"
+              >
+                {noteName}
+              </span>
+            )}
+          </span>
         </div>
+      </div>
 
-        <button className="primary-button" onClick={handleSave}>
-          Save
-        </button>
-      </header>
-
-      <main className="edit-main">
-        <div className="editor-content edit-content">
-          <BlockNoteView editor={editor} />
+      {/* MAIN EDITOR AREA */}
+      <section className="edit-page-body">
+        <div className="quill-shell">
+          <ReactQuill
+            theme="snow"
+            value={value}
+            onChange={setValue}
+            modules={modules}
+            formats={formats}
+          />
         </div>
-      </main>
+      </section>
     </div>
   );
 }
