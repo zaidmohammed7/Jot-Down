@@ -92,7 +92,7 @@ function Login_module() {
 
         // Navigate to MainPage
         setTimeout(() => {
-          navigate('/MainPage');
+          navigate('/Notes');
         }, 1500);
       }
     } catch (error) {

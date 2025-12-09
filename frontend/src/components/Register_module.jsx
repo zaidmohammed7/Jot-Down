@@ -101,7 +101,7 @@ function Register_module() {
         }
 
         setTimeout(() => {
-          navigate('/MainPage');
+          navigate('/Notes');
         }, 1500);
       }
     } catch (error) {
