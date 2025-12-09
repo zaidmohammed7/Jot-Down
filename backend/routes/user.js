@@ -1,5 +1,5 @@
 const pool = require('../db');
-//import crypto from "crypto";
+const crypto = require("crypto");
 
 
 module.exports = function(router) {
@@ -16,27 +16,53 @@ module.exports = function(router) {
         }
     });
 
-    userRoute.post(async (req, res) => {
-        try {
-            const { name, email } = req.body;
+    var userSignupRoute = router.route('/users/register');
 
-            if (!name || !email) {
-                return res.status(400).json({ error: 'Name and email are required.' });
+    userSignupRoute.post(async (req, res) => {
+         try {
+            const { name, email, password } = req.body;
+
+            if (!name || !email || !password) {
+                return res.status(400).json({ error: 'Invalid name/password/email' });
             }
 
-            const result = await pool.query(
-                'INSERT INTO users (name, email) VALUES ($1, $2) RETURNING *',
-                [name, email]
+            // console.log('This is the name : %s', name);
+            // console.log('This is the email : %s', email);
+            // console.log('this is the password :%s', password);
+            
+            const userResult = await pool.query(
+            `SELECT id, password_hash_with_salt, salt FROM users WHERE email = $1`,
+            [email]
             );
 
-            res.status(201).json({
-            message: 'User added successfully',
-            user: result.rows[0],
+            if (userResult.rowCount != 0) {
+                return res.status(409).json({ 
+                    message: 'User associated with this email already exists',
+                    error: "User associated with this email already exists" });
+            }
+
+            
+            const salt = crypto.randomBytes(16).toString("hex");
+            const passwordHash = crypto.createHash("sha256")
+                .update(password + salt)
+                .digest("hex");
+
+            const insertResult = await pool.query(
+                `INSERT INTO users (email, name, password_hash_with_salt, salt)
+                VALUES ($1, $2, $3, $4)
+                RETURNING id`,
+                [email, name, passwordHash, salt]
+            );
+                    
+            res.status(200).json({
+                message: 'Successful Account creation',
+                userID: insertResult.rows[0].id
             });
         } catch (err) {
             console.error(err);
             res.status(500).json({ error: 'Database error' });
         }
+
     });
 
     var userLoginRoute = router.route('/users/login');
@@ -49,17 +75,35 @@ module.exports = function(router) {
                 return res.status(400).json({ error: 'Invalid password/email' });
             }
 
-            console.log('This is the email : %s', email);
-            console.log('this is the password :%s', password);
-            // const hash = crypto
-            // .pbkdf2Sync(password, salt, 310000, 32, "sha256")
-            // .toString("hex");
+            // console.log('This is the email : %s', email);
+            // console.log('this is the password :%s', password);
             
+            const userResult = await pool.query(
+            `SELECT id, password_hash_with_salt, salt FROM users WHERE email = $1`,
+            [email]
+            );
 
+            if (userResult.rowCount === 0) {
+                return res.status(401).json({ error: "Invalid email or password" });
+            }
 
-            res.status(200).json({
-            message: 'Successful Login',
-            });
+            const user = userResult.rows[0];
+
+            const computedHash = crypto
+                .createHash("sha256")
+                .update(password + user.salt)
+                .digest("hex");
+
+            const hashesMatch = crypto.timingSafeEqual(
+            Buffer.from(computedHash, "utf8"),
+            Buffer.from(user.password_hash_with_salt, "utf8")
+            );
+
+            if (!hashesMatch) {
+                return res.status(401).json({ error: "Invalid email or password" });
+            }
+                    
+            res.status(200).json({message: 'Successful Login', userID: user.id});
         } catch (err) {
             console.error(err);
             res.status(500).json({ error: 'Database error' });
