@@ -81,7 +81,7 @@
 }
 
 .innerBox button[type="submit"]:hover {
-  background: #a26bff;
+  background: #b47fff;
   transform: translateY(-1px);
 }
 
@@ -162,6 +162,15 @@
 .showPasswordButton:disabled {
   cursor: not-allowed;
   opacity: 0.5;
+}
+
+/* Field error message */
+.fieldError {
+  display: block;
+  color: #ff8c9b;
+  font-size: 0.75rem;
+  margin-top: 0.3rem;
+  margin-left: 0.2rem;
 }
 
 /* Loading state for button */
