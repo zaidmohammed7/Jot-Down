@@ -4,6 +4,10 @@ frontend/node_modules/
 
 .env
 
+
+# production
+/build
+
 backend/prisma/dev.db
 backend/.env
 frontend/.env
