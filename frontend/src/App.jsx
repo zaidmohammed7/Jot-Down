@@ -10,7 +10,7 @@ import './index.css'
 function App() {
   return (
     <div className="app-body">
-      <BrowserRouter>
+      <BrowserRouter basename="/jot-down"> 
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/Login" element={<Login />} />
