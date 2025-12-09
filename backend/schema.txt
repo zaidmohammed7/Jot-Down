@@ -19,12 +19,12 @@
 
 
                              Table "public.documents"
- Column |  Type   | Collation | Nullable |                Default                
---------+---------+-----------+----------+---------------------------------------
- id     | integer |           | not null | nextval('documents_id_seq'::regclass)
- name   | text    |           | not null | 
- text   | text    |           |          | 
-
+ Column                    |  Type   | Collation | Nullable |                Default                
+---------------------------+---------+-----------+----------+---------------------------------------
+ id                        | integer |           | not null | nextval('documents_id_seq'::regclass)
+ name                      | text    |           | not null | 
+ text                      | text    |           |          | 
+ parent_folder             | integer |           |          | 
 
                                    Table "public.folders"
       Column      |   Type    | Collation | Nullable |               Default               

@@ -26,9 +26,9 @@ module.exports = function(router) {
                 return res.status(400).json({ error: 'Invalid name/password/email' });
             }
 
-            console.log('This is the name : %s', name);
-            console.log('This is the email : %s', email);
-            console.log('this is the password :%s', password);
+            // console.log('This is the name : %s', name);
+            // console.log('This is the email : %s', email);
+            // console.log('this is the password :%s', password);
             
             const userResult = await pool.query(
             `SELECT id, password_hash_with_salt, salt FROM users WHERE email = $1`,
@@ -75,8 +75,8 @@ module.exports = function(router) {
                 return res.status(400).json({ error: 'Invalid password/email' });
             }
 
-            console.log('This is the email : %s', email);
-            console.log('this is the password :%s', password);
+            // console.log('This is the email : %s', email);
+            // console.log('this is the password :%s', password);
             
             const userResult = await pool.query(
             `SELECT id, password_hash_with_salt, salt FROM users WHERE email = $1`,
