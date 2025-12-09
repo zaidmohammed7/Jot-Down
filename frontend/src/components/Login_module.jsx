@@ -40,7 +40,7 @@ function Login_module() {
     setValidationErrors(errors);
   }, [credentials]); // Runs every time credentials change
 
-  const navigate = useNavigate();
+  //const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -96,7 +96,7 @@ function Login_module() {
 
         // Navigate to MainPage
         setTimeout(() => {
-          navigate('/MainPage');
+          navigate('/Notes');
         }, 1500);
       }
     } catch (error) {

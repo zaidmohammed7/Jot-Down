@@ -16,29 +16,6 @@ module.exports = function(router) {
         }
     });
 
-    userRoute.post(async (req, res) => {
-        try {
-            const { name, email } = req.body;
-
-            if (!name || !email) {
-                return res.status(400).json({ error: 'Name and email are required.' });
-            }
-
-            const result = await pool.query(
-                'INSERT INTO users (name, email) VALUES ($1, $2) RETURNING *',
-                [name, email]
-            );
-
-            res.status(201).json({
-            message: 'User added successfully',
-            user: result.rows[0],
-            });
-        } catch (err) {
-            console.error(err);
-            res.status(500).json({ error: 'Database error' });
-        }
-    });
-
     var userSignupRoute = router.route('/users/register');
 
     userSignupRoute.post(async (req, res) => {
@@ -59,7 +36,9 @@ module.exports = function(router) {
             );
 
             if (userResult.rowCount != 0) {
-                return res.status(401).json({ error: "User associated with this email already exists" });
+                return res.status(409).json({ 
+                    message: 'User associated with this email already exists',
+                    error: "User associated with this email already exists" });
             }
 
             

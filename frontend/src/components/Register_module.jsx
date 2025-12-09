@@ -110,11 +110,11 @@ function Register_module() {
         // }
 
         setTimeout(() => {
-          navigate('/MainPage');
+          navigate('/Notes');
         }, 1500);
       }
     } catch (error) {
-      console.error("Error getting response from backend", error);
+      console.error(error);
       
       if (error.response) {
         setError(error.response.data.message || 'An error occurred. Please try again.');
