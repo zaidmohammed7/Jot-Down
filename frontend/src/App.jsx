@@ -3,7 +3,8 @@ import { BrowserRouter, Routes, Route} from "react-router-dom";
 import Login from './pages/Login';
 import Register from './pages/Register';
 import MainPage from './pages/MainPage';
-import Launch from './pages/Launch';
+import EditPage from "./pages/EditPage";
+import Landing from './pages/Landing';
 import './index.css'
 
 function App() {
@@ -11,10 +12,11 @@ function App() {
     <div className="app-body">
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Launch />} />
+          <Route path="/" element={<Landing />} />
           <Route path="/Login" element={<Login />} />
           <Route path="/Register" element={<Register />} />
-          <Route path="/MainPage" element={<MainPage />} />
+          <Route path="/Notes" element={<MainPage />} />
+          <Route path="/edit/:noteId" element={<EditPage />} />
         </Routes>
       </BrowserRouter>
     </div>

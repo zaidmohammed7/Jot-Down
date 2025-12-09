@@ -7,7 +7,9 @@ import { getAIReview } from "../services/gemini";
 function MainPage() {
   const navigate = useNavigate();
 
-  // treeData is a recursive tree of nodes: { id, name, type: 'folder' | 'note', children? }
+  // TEMP: hard-coded sample folder/note tree; replace with data fetched from the backend
+  // (e.g., useEffect + GET /api/tree for this user/course).
+  // Folder/note tree structure: { id, name, type: 'folder' | 'note', children? }
   const [treeData, setTreeData] = useState([
     {
       id: "folder-daily",
@@ -41,20 +43,22 @@ function MainPage() {
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  // Currently selected folder (or null for "root")
+  // ID of the selected folder (null = root)
   const [selectedFolderId, setSelectedFolderId] = useState(null);
 
-  // Selected note info
+  // Currently selected note (used to show preview + edit)
   const [selectedNote, setSelectedNote] = useState(null);
 
-  // Inline "new item" state
+  // Inline "new item" row: { type, parentId, name }
   const [newItem, setNewItem] = useState(null);
 
-  // Context menu (three dots) state
+  // Node with an open context menu (three dots)
   const [menuNodeId, setMenuNodeId] = useState(null);
 
-  // Drag state
+  // Node being dragged
   const [draggedNodeId, setDraggedNodeId] = useState(null);
+
+  // Folder currently highlighted as a drop target
   const [dragOverFolderId, setDragOverFolderId] = useState(null);
 
   // Rename state
@@ -104,7 +108,9 @@ function MainPage() {
     return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
   };
 
-  // Recursively insert a new node under parentId (or root if parentId === null)
+  // Insert a new node under parentId (or root if parentId === null)
+  // NOTE: This is local tree manipulation; when wired to a backend,
+  // you'll also call a "create folder/note" API and then update state from the response.
   const addNodeToTree = (nodes, parentId, newNode) => {
     if (parentId === null) {
       const updated = [...nodes, newNode].sort(sortNodesForDisplay);
@@ -147,7 +153,7 @@ function MainPage() {
     setMenuNodeId(null);
   };
 
-  // Click on empty sidebar background → select "root"
+  // Click on empty sidebar background → reset to "root"
   const handleSidebarBackgroundClick = (event) => {
     if (event.target === event.currentTarget) {
       setSelectedFolderId(null);
@@ -156,7 +162,9 @@ function MainPage() {
     }
   };
 
-  // Add note: target = selected folder or root if none
+  // Add note: use selected folder or root if none
+  // TODO DB: when the user confirms the new note name (submitNewItem),
+  // call "create note" endpoint and use the returned ID instead of Date.now().
   const handleAddNoteClick = () => {
     setMenuNodeId(null);
     setNewItem({
@@ -166,7 +174,9 @@ function MainPage() {
     });
   };
 
-  // Add folder: target = selected folder or root if none
+  // Add folder: use selected folder or root if none
+  // TODO DB: when the user confirms the new folder name (submitNewItem),
+  // call "create folder" endpoint and use the returned ID instead of Date.now().
   const handleAddFolderClick = () => {
     setMenuNodeId(null);
     setNewItem({
@@ -192,7 +202,11 @@ function MainPage() {
     }
 
     const name = newItem.name.trim();
+
+    // TEMP: using Date.now() for IDs; replace with real IDs from the backend response.
+    // TODO DB: call POST /folders or /notes here, await response, and use response.id.
     const id = `${newItem.type}-${Date.now()}`;
+
     const newNode =
       newItem.type === "folder"
         ? { id, name, type: "folder", children: [] }
@@ -206,8 +220,9 @@ function MainPage() {
     setNewItem(null);
   };
 
-  // Delete a node (folder or note)
+  // Remove a folder or note by id
   const handleDeleteNode = (targetId) => {
+    // TODO DB: call DELETE /folders/:id or /notes/:id before or after updating local state.
     setTreeData((prev) => {
       const { nodes } = removeNodeFromTree(prev, targetId);
       return nodes;
@@ -222,8 +237,7 @@ function MainPage() {
     }
   };
 
-  // ***** RENAME HELPERS *****
-
+  // Rename helpers
   const startRenamingNode = (node) => {
     setRenamingNodeId(node.id);
     setRenameValue(node.name);
@@ -243,9 +257,11 @@ function MainPage() {
       return;
     }
 
+    // TODO DB: call PATCH /folders/:id or /notes/:id with { name: trimmed }
+    // to persist this rename, then sync local state with server if needed.
     setTreeData((prev) => renameNodeInTree(prev, renamingNodeId, trimmed));
 
-    // If we're renaming the currently open note, update its title in state
+    // Keep selected note title in sync if we're renaming it
     if (selectedNote && selectedNote.noteId === renamingNodeId) {
       setSelectedNote((prev) => (prev ? { ...prev, title: trimmed } : prev));
     }
@@ -270,8 +286,7 @@ function MainPage() {
       .sort(sortNodesForDisplay);
   };
 
-  // ***** DRAG HELPERS *****
-
+  // Drag-and-drop helpers
   const handleDragStart = (nodeId, e) => {
     e.stopPropagation();
     setDraggedNodeId(nodeId);
@@ -284,7 +299,7 @@ function MainPage() {
     setDragOverFolderId(null);
   };
 
-  // Drag over ROOT (empty area) → allow drop to root
+  // Drag over root (empty area) to move item to root
   const handleDragOverRoot = (e) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
@@ -296,12 +311,14 @@ function MainPage() {
     e.preventDefault();
     if (!draggedNodeId) return;
 
+    // TODO DB: update the item's parent to "root" (null) on the backend.
+    // e.g., PATCH /nodes/:id with { parentId: null }.
     setTreeData((prev) => moveNodeInTree(prev, draggedNodeId, null));
     setDraggedNodeId(null);
     setDragOverFolderId(null);
   };
 
-  // Drag over a folder (header or its children) → highlight & set as drop target
+  // Drag over a folder (label or children) to mark as drop target
   const handleDragOverFolder = (folderId, e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -310,7 +327,7 @@ function MainPage() {
       return;
     }
 
-    // Don't allow dropping a folder into its own descendant
+    // Prevent dropping a folder into one of its own descendants
     if (isDescendant(treeData, draggedNodeId, folderId)) {
       setDragOverFolderId(null);
       return;
@@ -328,24 +345,25 @@ function MainPage() {
       return;
     }
 
-    // Again, guard ancestor->descendant
+    // Same guard: don't allow ancestor → descendant
     if (isDescendant(treeData, draggedNodeId, folderId)) {
       setDragOverFolderId(null);
       return;
     }
 
+    // TODO DB: update parentId on the backend to folderId for draggedNodeId.
+    // e.g., PATCH /nodes/:id with { parentId: folderId }.
     setTreeData((prev) => moveNodeInTree(prev, draggedNodeId, folderId));
     setDraggedNodeId(null);
     setDragOverFolderId(null);
   };
 
-  // ***** EDIT BUTTON → go to new page *****
-
+  // Edit button → go to the note's edit page
   const handleEditClick = () => {
     if (!selectedNote) return;
 
-    // Navigate to an EditPage route like /edit/<noteId>
-    // You can create EditPage.jsx and a Route for this later.
+    // NOTE: This just passes metadata via router state.
+    // The EditPage should query the backend for the actual note content by noteId.
     navigate(`/edit/${selectedNote.noteId}`, {
       state: {
         noteId: selectedNote.noteId,
@@ -356,11 +374,11 @@ function MainPage() {
     });
   };
 
-  // Recursive render function
+  // Render a list of nodes (folders + notes) at this level
   const renderNodeList = (nodes, parentId = null) => {
     return (
       <>
-        {/* Inline new item row at this level */}
+        {/* Inline "new item" row for this level (TEMP: local-only until hooked to backend create APIs) */}
         {newItem && newItem.parentId === parentId && (
           <form onSubmit={submitNewItem}>
             <div className="new-item-row">
@@ -398,7 +416,7 @@ function MainPage() {
                 key={node.id}
                 className="tree-group"
                 open
-                // Make the entire folder "zone" a drop area
+                // Treat the folder block as a drop zone
                 onDragOver={(e) => handleDragOverFolder(node.id, e)}
                 onDrop={(e) => handleDropOnFolder(node.id, e)}
               >
@@ -492,7 +510,7 @@ function MainPage() {
             );
           }
 
-          // Note
+          // Render a single note
           const parentFolder = findParentFolder(treeData, node.id);
           const folderName = parentFolder?.name ?? "Root";
           const folderId = parentFolder?.id ?? null;
@@ -588,7 +606,8 @@ function MainPage() {
     );
   };
 
-  // Helper to find parent folder of a node by id
+  // Find the parent folder node for a given id
+  // (Only used locally to compute breadcrumbs/labels; no DB work here.)
   const findParentFolder = (nodes, targetId, parent = null) => {
     for (const node of nodes) {
       if (node.id === targetId) {
@@ -602,7 +621,9 @@ function MainPage() {
     return null;
   };
 
-  // Remove a node and return new tree + extracted node
+  // Remove a node and return both the new tree and the removed node
+  // Used by handleDeleteNode and moveNodeInTree.
+  // DB delete/move calls should be triggered in those handlers, not here.
   const removeNodeFromTree = (nodes, targetId) => {
     let extracted = null;
 
@@ -629,7 +650,7 @@ function MainPage() {
     return { nodes: newNodes, extracted };
   };
 
-  // Find node by id
+  // Find a node by id anywhere in the tree
   const findNodeById = (nodes, targetId) => {
     for (const node of nodes) {
       if (node.id === targetId) return node;
@@ -641,7 +662,7 @@ function MainPage() {
     return null;
   };
 
-  // Check if targetId is inside subtree of ancestorId
+  // Check if targetId lives inside ancestorId's subtree
   const isDescendant = (nodes, ancestorId, targetId) => {
     const ancestor = findNodeById(nodes, ancestorId);
     if (!ancestor || ancestor.type !== "folder" || !ancestor.children) return false;
@@ -665,7 +686,8 @@ function MainPage() {
     return found;
   };
 
-  // Move a node to a new parent (folder or root)
+  // Move a node under a new parent (folder or root)
+  // NOTE: DB parent updates are triggered where moveNodeInTree is called (drag/drop handlers).
   const moveNodeInTree = (nodes, nodeId, newParentId) => {
     const { nodes: withoutNode, extracted } = removeNodeFromTree(nodes, nodeId);
     if (!extracted) return nodes;
@@ -674,7 +696,7 @@ function MainPage() {
 
   return (
     <div className={`app-shell ${sidebarCollapsed ? "is-sidebar-collapsed" : ""}`}>
-      {/* LEFT SIDEBAR */}
+      {/* Left sidebar */}
       <aside className="sidebar">
         <div className="sidebar-header">
           <div className="sidebar-header-left">
@@ -720,13 +742,13 @@ function MainPage() {
             onDragOver={handleDragOverRoot}
             onDrop={handleDropOnRoot}
           >
-            {/* Root-level list */}
+            {/* Root-level list (TEMP: in-memory tree; later hydrate from backend on mount) */}
             {renderNodeList(treeData, null)}
           </nav>
         )}
       </aside>
 
-      {/* CENTER: EDITOR */}
+      {/* Center editor pane */}
       <main className="editor-pane">
         {!selectedNote ? (
           <div className="editor-placeholder">
