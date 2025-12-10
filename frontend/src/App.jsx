@@ -10,7 +10,6 @@ import './index.css'
 function App() {
   return (
     <div className="app-body">
-      <BrowserRouter>
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/Login" element={<Login />} />
@@ -18,7 +17,6 @@ function App() {
           <Route path="/Notes" element={<MainPage />} />
           <Route path="/edit/:noteId" element={<EditPage />} />
         </Routes>
-      </BrowserRouter>
     </div>
   )
 }
