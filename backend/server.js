@@ -8,13 +8,17 @@
 
   app.use(cors({
     origin: [
-      'http://localhost:5173', 
-      'http://localhost:3000', 
-       'https://ryan-kumar.github.io/jot-down/'  // fill this in later
+      'http://localhost:5173',
+      'http://localhost:3000',
+      'https://ryan-kumar.github.io'
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    credentials: true, 
+    credentials: true
   }));
+
+
+  app.options('*', cors());
+
   app.use(express.json());
 
   
