@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 // How often to autosave after the user stops typing (ms)
 const AUTOSAVE_MS = 2000;
-
+// edit for commit
 // NOTE: When backend is wired up, you can pass noteId via router params or props.
 async function saveNoteDraft(content) {
   // TODO: Replace this with a real API call to persist the note.
