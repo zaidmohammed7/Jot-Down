@@ -4,6 +4,8 @@ import { VscNewFile, VscNewFolder } from "react-icons/vsc";
 import { useNavigate } from "react-router-dom";
 import { getAIReview } from "../services/gemini";
 
+const backend_path = "http://localhost:3500";
+
 function MainPage() {
   const navigate = useNavigate();
 
@@ -69,12 +71,70 @@ function MainPage() {
   const [noteContent, setNoteContent] = useState("");
   const [aiFeedback, setAiFeedback] = useState(null);
   const [isLoadingAI, setIsLoadingAI] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState(null);
+
+  useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const [foldersRes, docsRes] = await Promise.all([
+        fetch(`${backend_path}/api/folders`),
+        fetch(`${backend_path}/api/documents`)
+      ]);
+      
+      const folders = await foldersRes.json();
+      const documents = await docsRes.json();
+      
+      // Build tree structure from flat data
+      const buildTree = (parentId) => {
+        const children = [];
+        
+        // Add folders
+        folders
+          .filter(f => f.parent_folder === parentId)
+          .forEach(folder => {
+            children.push({
+              id: `folder-${folder.id}`,
+              name: folder.name,
+              type: 'folder',
+              dbId: folder.id,
+              children: buildTree(folder.id)
+            });
+          });
+        
+        // Add documents
+        documents
+          .filter(d => d.parent_folder === parentId)
+          .forEach(doc => {
+            children.push({
+              id: `note-${doc.id}`,
+              name: doc.name,
+              type: 'note',
+              dbId: doc.id
+            });
+          });
+        
+        return children.sort(sortNodesForDisplay);
+      };
+      
+      setTreeData(buildTree(null));
+    } catch (err) {
+      console.log("Failed to load data:", err);
+    }
+  };
+  
+  fetchData();
+}, []);
+
 
   // Update editor content when a new note is selected
   useEffect(() => {
     if (selectedNote) {
       // In a real app, you would fetch the content from the backend here
-      setNoteContent(`This is the content for ${selectedNote.title}. You can edit this text now!`);
+      fetch(`${backend_path}/api/documents/${selectedNote.dbId}`)
+        .then(res => res.json())
+       .then(doc => setNoteContent(doc.text || ''))
+       .catch(err => console.error('Failed to load note:', err));
       setAiFeedback(null);
     } else {
       setNoteContent("");
@@ -99,6 +159,27 @@ function MainPage() {
       setIsLoadingAI(false);
     }
   };
+
+    // Save note content to backend
+  const handleSaveNote = async () => {
+    if (!selectedNote || !selectedNote.dbId) return;
+    
+    setIsSaving(true);
+    try {
+      await fetch(`${backend_path}/api/documents/${selectedNote.dbId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: noteContent })
+      });
+      setLastSaved(new Date());
+    } catch (err) {
+      console.error('Failed to save note:', err);
+      alert('Failed to save note. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
 
   // Sort so folders appear first, then notes; both alphabetically within type
   const sortNodesForDisplay = (a, b) => {
@@ -147,6 +228,7 @@ function MainPage() {
     setSelectedNote({
       folderId,
       folderName,
+      dbId: note.dbId,
       noteId: note.id,
       title: note.name,
     });
@@ -203,38 +285,81 @@ function MainPage() {
 
     const name = newItem.name.trim();
 
-    // TEMP: using Date.now() for IDs; replace with real IDs from the backend response.
-    // TODO DB: call POST /folders or /notes here, await response, and use response.id.
-    const id = `${newItem.type}-${Date.now()}`;
+    // Extract DB parent ID from the UI parent ID
+    const parentDbId = newItem.parentId 
+      ? parseInt(newItem.parentId.split('-')[1]) 
+      : null;
 
-    const newNode =
-      newItem.type === "folder"
-        ? { id, name, type: "folder", children: [] }
-        : { id, name, type: "note" };
+  if (newItem.type === "folder") {
+    // Create folder
+    fetch(`${backend_path}/api/folders`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, parent_folder: parentDbId })
+    })
+      .then(res => res.json())
+      .then(folder => {
+        const newNode = {
+          id: `folder-${folder.id}`,
+          name: folder.name,
+          type: 'folder',
+          dbId: folder.id,
+          children: []
+        };
+        setTreeData(prev => addNodeToTree(prev, newItem.parentId, newNode));
+        setSelectedFolderId(newNode.id);
+      })
+      .catch(err => console.error('Failed to create folder:', err));
+      } else {
+        // Create document
+        fetch(`${backend_path}/api/documents`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, text: '', parent_folder: parentDbId })
+        })
+          .then(res => res.json())
+          .then(doc => {
+            const newNode = {
+              id: `note-${doc.id}`,
+              name: doc.name,
+              type: 'note',
+              dbId: doc.id
+            };
+            setTreeData(prev => addNodeToTree(prev, newItem.parentId, newNode));
+          })
+          .catch(err => console.error('Failed to create document:', err));
+      }
 
-    setTreeData((prev) => addNodeToTree(prev, newItem.parentId, newNode));
-
-    if (newItem.type === "folder") {
-      setSelectedFolderId(id);
-    }
     setNewItem(null);
+
   };
 
   // Remove a folder or note by id
   const handleDeleteNode = (targetId) => {
-    // TODO DB: call DELETE /folders/:id or /notes/:id before or after updating local state.
-    setTreeData((prev) => {
-      const { nodes } = removeNodeFromTree(prev, targetId);
-      return nodes;
-    });
+   const node = findNodeById(treeData, targetId);
+  if (!node) return;
 
-    if (selectedFolderId === targetId) setSelectedFolderId(null);
-    if (selectedNote?.noteId === targetId) setSelectedNote(null);
-    if (menuNodeId === targetId) setMenuNodeId(null);
-    if (renamingNodeId === targetId) {
-      setRenamingNodeId(null);
-      setRenameValue("");
-    }
+  const endpoint = node.type === 'folder' 
+    ? `${backend_path}/api/folders/${node.dbId}` 
+    : `${backend_path}/api/documents/${node.dbId}`;
+
+  fetch(endpoint, { method: 'DELETE' })
+    .then(() => {
+      setTreeData((prev) => {
+        const { nodes } = removeNodeFromTree(prev, targetId);
+        return nodes;
+      });
+
+      if (selectedFolderId === targetId) setSelectedFolderId(null);
+      if (selectedNote?.noteId === targetId) setSelectedNote(null);
+      if (menuNodeId === targetId) setMenuNodeId(null);
+      if (renamingNodeId === targetId) {
+        setRenamingNodeId(null);
+        setRenameValue("");
+      }
+    })
+    .catch(err => console.error('Failed to delete:', err));
+
   };
 
   // Rename helpers
@@ -257,16 +382,33 @@ function MainPage() {
       return;
     }
 
-    // TODO DB: call PATCH /folders/:id or /notes/:id with { name: trimmed }
-    // to persist this rename, then sync local state with server if needed.
-    setTreeData((prev) => renameNodeInTree(prev, renamingNodeId, trimmed));
+  const node = findNodeById(treeData, renamingNodeId);
+  if (!node) return;
 
-    // Keep selected note title in sync if we're renaming it
-    if (selectedNote && selectedNote.noteId === renamingNodeId) {
-      setSelectedNote((prev) => (prev ? { ...prev, title: trimmed } : prev));
-    }
+  const endpoint = node.type === 'folder'
+    ? `${backend_path}/api/folders/${node.dbId}/rename`
+    : `${backend_path}/api/documents/${node.dbId}`;
 
-    cancelRename();
+  const body = node.type === 'folder'
+    ? { name: trimmed }
+    : { name: trimmed };
+
+  fetch(endpoint, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  })
+    .then(() => {
+      setTreeData((prev) => renameNodeInTree(prev, renamingNodeId, trimmed));
+      
+      if (selectedNote && selectedNote.noteId === renamingNodeId) {
+        setSelectedNote((prev) => (prev ? { ...prev, title: trimmed } : prev));
+      }
+      
+      cancelRename();
+    })
+    .catch(err => console.error('Failed to rename:', err));
+
   };
 
   const renameNodeInTree = (nodes, targetId, newName) => {
@@ -311,11 +453,29 @@ function MainPage() {
     e.preventDefault();
     if (!draggedNodeId) return;
 
-    // TODO DB: update the item's parent to "root" (null) on the backend.
-    // e.g., PATCH /nodes/:id with { parentId: null }.
-    setTreeData((prev) => moveNodeInTree(prev, draggedNodeId, null));
-    setDraggedNodeId(null);
-    setDragOverFolderId(null);
+    const node = findNodeById(treeData, draggedNodeId);
+    if (!node) return;
+
+    const endpoint = node.type === 'folder'
+      ? `${backend_path}/api/folders/${node.dbId}/move`
+      : `${backend_path}/api/documents/${node.dbId}/move`;
+
+    const body = node.type === 'folder'
+      ? { newParentId: null }
+      : { newFolder: null };
+
+    fetch(endpoint, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    })
+      .then(() => {
+        setTreeData((prev) => moveNodeInTree(prev, draggedNodeId, null));
+        setDraggedNodeId(null);
+        setDragOverFolderId(null);
+      })
+      .catch(err => console.error('Failed to move:', err));
+
   };
 
   // Drag over a folder (label or children) to mark as drop target
@@ -351,11 +511,29 @@ function MainPage() {
       return;
     }
 
-    // TODO DB: update parentId on the backend to folderId for draggedNodeId.
-    // e.g., PATCH /nodes/:id with { parentId: folderId }.
-    setTreeData((prev) => moveNodeInTree(prev, draggedNodeId, folderId));
-    setDraggedNodeId(null);
-    setDragOverFolderId(null);
+    const node = findNodeById(treeData, draggedNodeId);
+    if (!node) return;
+
+    const endpoint = node.type === 'folder'
+      ? `${backend_path}/api/folders/${node.dbId}/move`
+      : `${backend_path}/api/documents/${node.dbId}/move`;
+
+    const body = node.type === 'folder'
+      ? { newParentId: null }
+      : { newFolder: null };
+
+    fetch(endpoint, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    })
+      .then(() => {
+        setTreeData((prev) => moveNodeInTree(prev, draggedNodeId, null));
+        setDraggedNodeId(null);
+        setDragOverFolderId(null);
+      })
+      .catch(err => console.error('Failed to move:', err));
+
   };
 
   // Edit button → go to the note's edit page
@@ -765,6 +943,25 @@ function MainPage() {
                   {selectedNote.title}
                 </span>
               </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                {lastSaved && (
+                  <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                    Last saved: {lastSaved.toLocaleTimeString()}
+                  </span>
+                )}
+                <button
+                  className="primary-button"
+                  onClick={handleSaveNote}
+                  disabled={isSaving}
+                  style={{
+                    opacity: isSaving ? 0.6 : 1,
+                    cursor: isSaving ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  {isSaving ? 'Saving...' : 'Save'}
+                </button>
+              </div>
+
             </header>
 
             <div className="editor-content" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>

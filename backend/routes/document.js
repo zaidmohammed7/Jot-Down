@@ -15,6 +15,26 @@ module.exports = function(router) {
         }
     });
 
+    router.get('/documents/:docId', async (req, res) => {
+    try {
+        const { docId } = req.params;
+
+        const result = await pool.query(
+            `SELECT * FROM documents WHERE id = $1`,
+            [docId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: "Document not found" });
+        }
+
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Database error');
+    }
+    });
+
     // CREATE document
     router.post('/documents', async (req, res) => {
         try {
