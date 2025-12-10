@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
 import axios from 'axios';
 
+const backend_path = "https://jot-down-2e73.onrender.com";
+
 function Login_module() {
   const navigate = useNavigate();
   const [credentials, setCredentials] = useState({
@@ -76,7 +78,7 @@ function Login_module() {
     setError('');
     setSuccess('');
 
-    const apiPath = "http://localhost:3500/api/users/login"; // change this to env variable later
+    const apiPath = `${backend_path}/api/users/login`; // change this to env variable later
 
     try {
       const res = await axios.post(apiPath, {

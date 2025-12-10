@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import styles from './Register.module.css';
 import axios from 'axios';
 
+const backend_path = "https://jot-down-2e73.onrender.com";
+
 function Register_module() {
   const navigate = useNavigate();
   const [credentials, setCredentials] = useState({
@@ -91,7 +93,7 @@ function Register_module() {
     setError('');
     setSuccess('');
 
-    const apiPath = "http://localhost:3500/api/users/register";
+      const apiPath = `${backend_path}/api/users/register`;
 
     try {
       const res = await axios.post(apiPath, {
