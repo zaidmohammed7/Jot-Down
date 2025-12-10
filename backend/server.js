@@ -10,7 +10,7 @@
     origin: [
       'http://localhost:5173', 
       'http://localhost:3000', 
-        process.env.LIVE_URL   // fill this in later
+       'https://ryan-kumar.github.io/jot-down/'  // fill this in later
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true, 
