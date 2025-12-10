@@ -23,6 +23,12 @@
     res.send('hello from the backend');
   });
 
+  app.get('/api/gemini_key', (req, res) => {
+    res.json({ key: process.env.GEMINI_KEY });
+  });
+
+
+
 
   require('./routes')(app, router);
   // Start the server

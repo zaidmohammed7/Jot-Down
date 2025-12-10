@@ -1,12 +1,27 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+//const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+
+const backend_path = "https://jot-down-2e73.onrender.com/api/gemini_key";
+
+let model = null;
+
+// Fetch the key once, then initialize Gemini
+async function initModel() {
+  const res = await fetch(backend_path);
+  const data = await res.json();
+
+  const API_KEY = data.key; // The key returned by your backend
+
+  const genAI = new GoogleGenerativeAI(API_KEY);
+  model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
+}
 
 //console.log("My Key is:", API_KEY); // Add this temporarily
 // Initialize the model
-const genAI = new GoogleGenerativeAI(API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
-
+// const genAI = new GoogleGenerativeAI(API_KEY);
+// const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
+initModel();
 export const getAIReview = async (text) => {
   if (!text) return null;
 
