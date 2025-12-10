@@ -1,0 +1,36 @@
+            List of relations
+ Schema |     Name     | Type  |  Owner   
+--------+--------------+-------+----------
+ public | documents    | table | postgres
+ public | folders      | table | postgres
+ public | pgmigrations | table | postgres
+ public | users        | table | postgres
+
+
+                              Table "public.users"
+         Column          |  Type   | Collation | Nullable |              Default              
+-------------------------+---------+-----------+----------+-----------------------------------
+ id                      | integer |           | not null | nextval('users_id_seq'::regclass)
+ name                    | text    |           | not null | 
+ email                   | text    |           | not null | 
+ password_hash_with_salt | text    |           |          | 
+ salt                    | text    |           |          | 
+ root_folder             | integer |           |          | 
+
+
+                             Table "public.documents"
+ Column                    |  Type   | Collation | Nullable |                Default                
+---------------------------+---------+-----------+----------+---------------------------------------
+ id                        | integer |           | not null | nextval('documents_id_seq'::regclass)
+ name                      | text    |           | not null | 
+ text                      | text    |           |          | 
+ parent_folder             | integer |           |          | 
+
+                                   Table "public.folders"
+      Column      |   Type    | Collation | Nullable |               Default               
+------------------+-----------+-----------+----------+-------------------------------------
+ id               | integer   |           | not null | nextval('folders_id_seq'::regclass)
+ name             | text      |           | not null | 
+ stored_documents | integer[] |           |          | 
+ nested_folders   | integer[] |           |          | 
+

@@ -6,6 +6,7 @@ import axios from 'axios';
 function Register_module() {
   const navigate = useNavigate();
   const [credentials, setCredentials] = useState({
+    name: '',          
     email: '',
     password: '',
     confirmPassword: ''
@@ -16,6 +17,7 @@ function Register_module() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [validationErrors, setValidationErrors] = useState({
+    name: '',          
     email: '',
     password: '',
     confirmPassword: ''
@@ -24,6 +26,11 @@ function Register_module() {
   // Real-time validation effect
   useEffect(() => {
     const errors = {};
+
+    // Name validation
+    if (credentials.name && credentials.name.length < 2) { // simple check
+      errors.name = 'Name must be at least 2 characters';
+    }
 
     // Email validation
     if (credentials.email) {
@@ -62,7 +69,7 @@ function Register_module() {
   };
 
   const validateForm = () => {
-    if (!credentials.email || !credentials.password || !credentials.confirmPassword) {
+    if (!credentials.name || !credentials.email || !credentials.password || !credentials.confirmPassword) { 
       setError('Please fill in all required fields');
       return false;
     }
@@ -88,6 +95,7 @@ function Register_module() {
 
     try {
       const res = await axios.post(apiPath, {
+        name: credentials.name,        
         email: credentials.email,
         password: credentials.password
       });
@@ -96,16 +104,17 @@ function Register_module() {
         setSuccess('Account created successfully! Redirecting...');
         console.log("Successful registration", res.data);
         
-        if (res.data.token) {
-          localStorage.setItem('token', res.data.token);
-        }
+        // silencing for now
+        // if (res.data.token) {
+        //   localStorage.setItem('token', res.data.token);
+        // }
 
         setTimeout(() => {
           navigate('/Notes');
         }, 1500);
       }
     } catch (error) {
-      console.error("Error getting response from backend", error);
+      console.error(error);
       
       if (error.response) {
         setError(error.response.data.message || 'An error occurred. Please try again.');
@@ -120,7 +129,8 @@ function Register_module() {
   };
 
   // Check if form is valid for button enable/disable
-  const isFormValid = credentials.email && 
+  const isFormValid = credentials.name &&  
+                      credentials.email && 
                       credentials.password && 
                       credentials.confirmPassword &&
                       Object.keys(validationErrors).every(key => !validationErrors[key]);
@@ -135,6 +145,25 @@ function Register_module() {
           {success && <div className={styles.successMessage}>{success}</div>}
           
           <div className={styles.inputBox}>
+
+            {/* Name Field */}
+            <div>
+              <label htmlFor="name">Name*</label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                value={credentials.name}
+                onChange={handleChange}
+                placeholder="Enter your name"
+                disabled={isLoading}
+                required
+              />
+              {validationErrors.name && (
+                <span className={styles.fieldError}>{validationErrors.name}</span>
+              )}
+            </div>
+
             <div>
               <label htmlFor="email">Email*</label>
               <input

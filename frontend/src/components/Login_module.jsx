@@ -40,6 +40,8 @@ function Login_module() {
     setValidationErrors(errors);
   }, [credentials]); // Runs every time credentials change
 
+  //const navigate = useNavigate();
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setCredentials({
@@ -86,9 +88,11 @@ function Login_module() {
         setSuccess('Login successful!');
         console.log("Successful login", res.data);
         
-        if (res.data.token) {
-          localStorage.setItem('token', res.data.token);
-        }
+
+        // silencing this for now
+        // if (res.data.token) {
+        //   localStorage.setItem('token', res.data.token);
+        // }
 
         // Navigate to MainPage
         setTimeout(() => {
