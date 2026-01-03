@@ -10,7 +10,7 @@
     origin: [
       'http://localhost:5173',
       'http://localhost:3000',
-      'https://ryan-kumar.github.io'
+      'https://zaidmohammed7.github.io'
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true
