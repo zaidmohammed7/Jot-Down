@@ -2,7 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 //const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
-const backend_path = "https://jot-down-idfq.onrender.com/api/gemini_key";
+const backend_path = "https://jotdown-api-idfq.onrender.com/api/gemini_key";
 
 let model = null;
 
