@@ -4,7 +4,7 @@ import { VscNewFile, VscNewFolder } from "react-icons/vsc";
 import { useNavigate } from "react-router-dom";
 import { getAIReview } from "../services/gemini";
 
-const backend_path = "https://jot-down-2e73.onrender.com";
+const backend_path = "https://jotdown-api-idfq.onrender.com/";
 
 function MainPage() {
   const navigate = useNavigate();

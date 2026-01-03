@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
 import axios from 'axios';
 
-const backend_path = "https://jot-down-2e73.onrender.com";
+const backend_path = "https://jotdown-api-idfq.onrender.com";
 
 function Login_module() {
   const navigate = useNavigate();
