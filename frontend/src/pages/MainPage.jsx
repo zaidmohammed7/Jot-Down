@@ -4,7 +4,7 @@ import { VscNewFile, VscNewFolder } from "react-icons/vsc";
 import { useNavigate } from "react-router-dom";
 import { getAIReview } from "../services/gemini";
 
-const backend_path = "https://jotdown-api-idfq.onrender.com/";
+const backend_path = "https://jotdown-api-idfq.onrender.com";
 
 function MainPage() {
   const navigate = useNavigate();
@@ -12,36 +12,7 @@ function MainPage() {
   // TEMP: hard-coded sample folder/note tree; replace with data fetched from the backend
   // (e.g., useEffect + GET /api/tree for this user/course).
   // Folder/note tree structure: { id, name, type: 'folder' | 'note', children? }
-  const [treeData, setTreeData] = useState([
-    {
-      id: "folder-daily",
-      name: "Daily",
-      type: "folder",
-      children: [
-        { id: "note-2025-12-01", name: "2025-12-01", type: "note" },
-        { id: "note-2025-12-02", name: "2025-12-02", type: "note" },
-      ],
-    },
-    {
-      id: "folder-ideas",
-      name: "Ideas",
-      type: "folder",
-      children: [
-        { id: "note-writing-telepathy", name: "Writing is telepathy", type: "note" },
-        { id: "note-calmness", name: "Calmness is a superpower", type: "note" },
-        { id: "note-evergreen", name: "Evergreen notes", type: "note" },
-      ],
-    },
-    {
-      id: "folder-projects",
-      name: "Projects",
-      type: "folder",
-      children: [
-        { id: "note-jotdown", name: "JotDown App", type: "note" },
-        { id: "note-cs409", name: "CS 409 Final", type: "note" },
-      ],
-    },
-  ]);
+  const [treeData, setTreeData] = useState([]);
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
